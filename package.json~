@@ -1,0 +1,30 @@
+{
+  "name": "server-app",
+  "version": "1.0.0",
+  "description": "app serving",
+  "main": "app.js",
+  "dependencies": {
+    "path": "^0.12.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Schmidt",
+  "license": "UNLICENSED"
+}
+{
+  "name": "server-default-file",
+  "version": "1.0.0",
+  "description": "Default File Serving",
+  "main": "DefaultFile.js",
+  "dependencies": {
+    "path": "^0.12.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Schmidt",
+  "license": "UNLICENSED"
+}

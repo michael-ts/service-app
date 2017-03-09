@@ -1,0 +1,15 @@
+{
+  "name": "service-app",
+  "version": "1.0.0",
+  "description": "app service",
+  "main": "app.js",
+  "dependencies": {
+    "path": "^0.12.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Schmidt",
+  "license": "UNLICENSED"
+}
