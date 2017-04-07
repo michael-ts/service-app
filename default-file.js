@@ -9,7 +9,7 @@ function DefaultFile(req, res){
     var DIR=process.cwd()
     Log("DefaultFile:",req.path,".")
     var xpath = req.path.split("/").map(sanitize).join(path.sep)
-    var p = xpath.join(DIR, "file", req.path)
+    var p = path.join(DIR, "file", xpath)
     if (fs.existsSync(p)) {
 	res.sendFile(p)
     } else {
