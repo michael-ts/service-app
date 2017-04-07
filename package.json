@@ -4,7 +4,8 @@
   "description": "app default default file service plug-in for express-modular-server",
   "main": "app.js",
   "dependencies": {
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "sanitize-filename": "^1.6.1"
   },
   "devDependencies": {},
   "scripts": {

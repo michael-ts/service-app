@@ -2,11 +2,13 @@
 
 var fs = require("fs")
 var path = require("path")
+var sanitize = require("sanitize-filename")
 var dir = "file"
 
 function DefaultFile(req, res){
     var DIR=process.cwd()
     Log("DefaultFile:",req.path,".")
+    var path = req.path.split("/").map(sanitize).join(path.sep)
     var p = path.join(DIR, "file", req.path)
     if (fs.existsSync(p)) {
 	res.sendFile(p)
