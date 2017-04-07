@@ -1,7 +1,7 @@
 {
   "name": "service-app",
   "version": "1.0.0",
-  "description": "app default default file service pliug-in for express-modular-server",
+  "description": "app default default file service plug-in for express-modular-server",
   "main": "app.js",
   "dependencies": {
     "path": "^0.12.7"
