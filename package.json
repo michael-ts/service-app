@@ -1,6 +1,6 @@
 {
   "name": "service-app",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "app default default file service plug-in for express-modular-server",
   "main": "app.js",
   "dependencies": {
