@@ -2,6 +2,7 @@
 
 var fs = require("fs")
 var path = require("path")
+var dir = "file"
 
 function DefaultFile(req, res){
     var DIR=process.cwd()
@@ -14,7 +15,7 @@ function DefaultFile(req, res){
 	if (fs.existsSync(sym)) {
 	    var file = fs.readFileSync(sym, "utf8")
 	    if (file[0] != "/") {
-		file = path.join(DIR, "/file/", file)
+		file = path.join(DIR, path.sep + dir + path.sep , file)
 	    }
 	    if (fs.existsSync(file)) {
 		res.sendFile(file)
@@ -28,6 +29,9 @@ function DefaultFile(req, res){
 }
 
 module.exports = function(app,express,options) {
+    if (options && typeof options == "string") {
+	dir = options
+    }
     Log("service DefaultFile")
     app.use(DefaultFile)
 }
