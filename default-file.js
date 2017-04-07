@@ -32,7 +32,7 @@ function DefaultFile(req, res){
 
 module.exports = function(app,express,options) {
     if (options && typeof options == "string") {
-	dir = options
+	dir = options.split("/").join(path.sep)
     }
     Log("service DefaultFile")
     app.use(DefaultFile)
