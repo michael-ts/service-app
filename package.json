@@ -1,6 +1,6 @@
 {
   "name": "service-app",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "app default default file service plug-in for express-modular-server",
   "main": "app.js",
   "dependencies": {
@@ -12,7 +12,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Michael Schmidt",
-    "license": "UNLICENSED",
+    "license": "GPL 3.0",
     "repository": {
 	"type": "git",
 	"url": "git+ssh://git@github.com/michael-ts/service-app.git"
