@@ -26,7 +26,7 @@ function DefaultFile(req, res) {
     if (file in dir) {
 	res.sendFile(dir[file])	
     } else {
-	res.status(400).send(err404)
+	res.status(404).send(err404)
     }
 }
 
