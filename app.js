@@ -52,7 +52,11 @@ function DefaultFile(req, res) {
 				}
 			    })
 			    res.send("<!doctype html><html><head></head><body>"+dir1.join("\n")+"</body></html>")
-			} else res.status(404).send("404 File not found")
+			} else if (fs.existsSync(file2+path.sep+"index.html")) {
+			    res.sendFile(file2+path.sep+"index.html")
+			} else {
+			    res.status(404).send("404 File not found")
+			} 
 			return
 		    } else if (st.isFile()) {
 			res.sendFile(file2)
