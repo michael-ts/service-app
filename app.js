@@ -28,6 +28,7 @@ function DefaultFile(req, res) {
     var file = req.path
     if (file[0] == "/") file = file.slice(1)
 
+    if (file == "") file = "index.html"
     if (file in dir) {
 	res.sendFile(dir[file])	
     } else {
