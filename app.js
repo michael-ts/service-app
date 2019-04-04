@@ -91,15 +91,11 @@ function* walker(dir) {
 		yield stat
 	    } else if (stat.isDirectory()) {
 		if (fullpath != fs.realpathSync(fullpath)) {
-		    // WTF, why are we even here?
-		    // We are NOT appending a slash to the end of our path,
-		    // so the symlink should NOT be getting resolved.
-		    // Yet this is exactly what we see. WTAF?!!!!!!!
-		    //console.log("found sYmlink masquerading as a directory",fullpath,"->",fs.realpathSync(fullpath))
+		    //console.log("found apparent symlinked path",fullpath)
 		    yield fullpath
 		} else {
 		    //console.log("found directory",fullpath)
-		    yield* walker(fullpath)
+		    yield fullpath
 		}
 	    }
 	    if (stat.isSymbolicLink()) {
