@@ -3,6 +3,7 @@
 var fs = require("fs")
 var path = require("path")
 var mime = require("mime-types")
+var sanitize = require("sanitize-filename")
 
 /*
   This module scans all directories in node_modules for modules starting with 
@@ -24,6 +25,7 @@ var mime = require("mime-types")
 var show_dirs  // if true, show directories in vdir
 var err404 = "<H1>404 File not Found</H1>"
 //var debug1
+/*
 function DefaultFile(req, res) {
     var file = req.path
     if (file[0] == "/") file = file.slice(1)
@@ -60,22 +62,27 @@ function DefaultFile(req, res) {
 			} 
 			return
 		    } else if (st.isFile()) {
-			res.sendFile(file2)
+			res.sendFile(file2,{maxAge:864000000})
 			return
 		    } 
+		} else {
+		    console.log(`Not found:${file2}`)
 		}
 	    }
 	}
 	res.status(404).send(err404)
     }
 }
+*/
 
 function Server(req,res,next) {
-    console.log("default:",servedfile)
-    res.sendFile(dir[servedfile])
+    console.log("app:",servedfile)
+    res.sendFile(files[servedfile])
 }
+/*
 var dir = { }, vdir = { }
 global.service_app_vdir = vdir
+*/
 
 function* walker(dir) {
     var files = fs.readdirSync(dir)
@@ -99,7 +106,7 @@ function* walker(dir) {
 		}
 	    }
 	    if (stat.isSymbolicLink()) {
-		console.log("found symlink",fullpath)
+		//console.log("found symlink",fullpath)
 		yield fullpath
 	    }
 	} catch (e) {
@@ -109,18 +116,20 @@ function* walker(dir) {
 }
 
 var p = path.resolve(".")
+/*
 async function do_init(dir0) {
     //if (!fs.existsSync(dir0+"/content")) return
+    //console.log(`walking ${dir0}`)
     var walk = walker(dir0)
-    console.log("walk",dir0)
+    //console.log("walk",dir0)
     var next = {done:false}
     while (true) {
 	next = walk.next()
 	if (next.done) break
 	if (typeof next.value == "string") { 
-	    var file = next.value.slice(dir0.length+1)+"/"
-	    console.log("adding vdir ",file)
-	    vdir[file] = next.value
+	    //var file = next.value.slice(dir0.length+1)+"/"
+	    //console.log("adding vdir ",file)
+	    //vdir[file] = next.value
 	} else {
 	    var fullpath = next.value.path+"/"+next.value.name
 	    var file = fullpath.slice(dir0.length+1)
@@ -129,29 +138,89 @@ async function do_init(dir0) {
 	    if (parts[plen] == "README.md") continue
 	    if (parts[plen].slice(-1) == "~") continue
 	    if (parts[0] == ".git") continue
-	    console.log("adding dir ",file)
+	    console.log(`adding map ${file} -> ${fullpath}`)
 	    dir[file] = fullpath
 	}
     }
 }
-
-while (true) {
-    if (fs.existsSync(p+path.sep+"node_modules")) {
-	var tmp = fs.readdirSync(p+path.sep+"node_modules")
-	    .filter(file=>{
-		return file.slice(0,7) == "webapp-"
-		    && fs.statSync(p+path.sep+"node_modules"+path.sep+file).isDirectory()
-	    })
-	    .map(file=>{
-		do_init(p+path.sep+"node_modules"+path.sep+file)
-	    })
-    }
-    if (p == path.sep) break
-    p = path.resolve(p+path.sep+"..")
-}
+*/
 
 var endpoint = "/app/"
 var servedfile = "app.html"
+var files = { }
+
+function DefaultFile(req,res) {
+    var file = req.path.slice(1)
+    if (!(file in files)) {
+	res.status(404).send("404 File not found")
+	return
+    }
+    res.sendFile(files[file])
+}
+
+function ProcessWebAppDir(app,path0,fn) {
+    var wa_path = path0+path.sep+fn
+    console.log("map: ",wa_path)
+    if (ProcessConfig(app,wa_path)) return
+    var tmp2 = fs.readdirSync(wa_path)
+	.map(file2=> {
+	    if (file2 == ".git") return false
+	    if (file2 == "node_modules") return false
+	    if (file2 == "package.json") return false
+	    if (file2 == "README.md") return false
+	    if (file2.slice(-1) == "~") return false
+	    var x= wa_path+path.sep+file2
+	    var stat = fs.existsSync(x) && fs.statSync(x)
+	    if (stat && stat.isDirectory()) {
+		RouteAdd(app,file2,wa_path+path.sep+file2+path.sep)
+	    } else if (stat && stat.isFile()) {
+		files[file2] = wa_path+path.sep+file2
+		console.log(file2,"->",wa_path+path.sep+file2);
+	    }
+	})
+}
+
+function RouteAdd(app,file,dest) {
+    console.log(file,"=>",dest);
+    app.get(path.sep+file+path.sep+"*", (req,res) => {
+	//console.log(`path=${req.path} => ${dest}`)
+	var sub = dest+req.params[0].split("/").map(sanitize).join("/")
+	console.log(sub)
+	res.sendFile(sub)
+    })
+}
+
+function ProcessConfig(app,wa_path) {
+    var conf = wa_path+path.sep+"webapp.cfg"
+    if (!fs.existsSync(conf)) return false
+    try {
+	var i,config = JSON.parse(fs.readFileSync(conf))
+	for (i in config) {
+	    // i thought of another variable besides HOME which could be useful, what was it?
+	    var isDir = i.slice(-1) == "/" || config[i].slice(-1) == "/"
+	    var isAbs = config[i].slice(0,1) == "/"
+	    var dest, i0=i
+	    if (config[i].slice(-1) == "/") config[i] = config[i].slice(0,-1)
+	    if (isAbs) {
+		dest = config[i]
+	    } else {
+		dest = fs.realpathSync(wa_path+path.sep+config[i])
+	    }
+	    if (i0.slice(-1) == "/") i0 = i0.slice(0,-1)
+	    
+	    if (isDir) {
+		RouteAdd(app,i0,dest+path.sep)
+	    } else {
+		console.log(`${i} -> ${dest}`)
+		files[i0] = dest
+	    }
+	}
+	return true
+    } catch (e) {
+	console.log(`error ${e}`)
+	return false
+    }
+}
 
 module.exports = function(app,express,options,file) {
     if (options && typeof options == "string") {
@@ -166,6 +235,22 @@ module.exports = function(app,express,options,file) {
     }
     Log("service app ",endpoint,",",servedfile)
     Log("service DefaultFile")
+    var appdir = p
+    while (true) {
+	var path0 = p+path.sep+"node_modules"
+	console.log(`l00king for ${path0}`)
+	if (fs.existsSync(path0)) {
+	    var tmp = fs.readdirSync(path0)
+		.filter(file=>{
+		    return file.slice(0,7) == "webapp-"
+			&& fs.statSync(path0+path.sep+file).isDirectory()
+		})
+		.map(fn=>ProcessWebAppDir(app,path0,fn))
+	}
+	if (p == path.sep) break
+	p = path.resolve(p+path.sep+"..")
+    }
+    ProcessConfig(app,appdir)
     app.use(endpoint, Server)
     app.use(DefaultFile)
 }
