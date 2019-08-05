@@ -4,6 +4,8 @@ var fs = require("fs")
 var path = require("path")
 var mime = require("mime-types")
 var sanitize = require("sanitize-filename")
+var os = require("os")
+var HOME=os.homedir()
 
 /*
   This module scans all directories in node_modules for modules starting with 
@@ -190,12 +192,35 @@ function RouteAdd(app,file,dest) {
     })
 }
 
+
+
+function Interpolate(wa_path,str) {
+    /*
+      ${HOME} -> user's home directory
+      ${module} -> package "module"'s top-level directory
+    */
+    var base = path.dirname(require.resolve(`${wa_path}/package.json`))
+    console.log(`Interpolate ${wa_path}, ${str}`)
+    try {
+	return str.replace(/(?:\$\{)(.*?)\}/g, (a,b) => {
+	    if (b == "HOME") return HOME
+	    // why not just return `${base}/node_modules/${b}/` at this point???
+	    return path.dirname(require.resolve(`${base}/node_modules/${b}/package.json`))
+	})
+    } catch (e) {
+	console.log(`interpolate: ${e}`)
+	return ""
+    }
+}
+
 function ProcessConfig(app,wa_path) {
     var conf = wa_path+path.sep+"webapp.cfg"
     if (!fs.existsSync(conf)) return false
     try {
 	var i,config = JSON.parse(fs.readFileSync(conf))
 	for (i in config) {
+	    config[i] = Interpolate(wa_path,config[i])
+	    if (!config[i]) continue
 	    // i thought of another variable besides HOME which could be useful, what was it?
 	    var isDir = i.slice(-1) == "/" || config[i].slice(-1) == "/"
 	    var isAbs = config[i].slice(0,1) == "/"
@@ -254,3 +279,4 @@ module.exports = function(app,express,options,file) {
     app.use(endpoint, Server)
     app.use(DefaultFile)
 }
+

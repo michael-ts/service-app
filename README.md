@@ -5,7 +5,7 @@ This is a plug-in for [express-modular-server](https://github.com/michael-ts/exp
 
 The logic for locating files integrates with the [webapp-app](https://github.com/michael-ts/webapp-app) package which provides the app.html file referenced above.  This change allows each web app to be installed directly from npm as its own separate package.  
 
-At startup, service-app scans for files and directories to serve.  It starts by looking for/in the `node_modules` sub-directory both of the top-level module (the app being run) and every directory above that.   It looks for modules which begin with the name `webapp-`.  For each one it finds, it looks in the module's directory for a file named `webapp.cfg` in JSON format.  If it finds it, it parses it according to the mapping scheme listed below.  Otherwise, it simply takes each file in that directory not excluded (see "Exclusions" below) and maps it as a root-level request.   For example, "test.js" in the module directory would be served whenever a URL for "/test.js" is received.  Sub-directories in the `webapp-` folder will not be mapped in this case.
+At startup, service-app scans for files and directories to serve.  It starts by looking for/in the `node_modules` sub-directory both of the top-level module (the app being run) and every directory above that.   It looks for modules which begin with the name `webapp-`.  For each one it finds, it looks in the module's directory for a file named `webapp.cfg` in JSON format.  If it finds it, it parses it according to the mapping scheme listed below.  Otherwise, it simply takes each file in that directory maps it statically as a root-level request.   For example, "test.js" in the module directory would be served whenever a URL for "/test.js" is received.  Sub-directories in the `webapp-` folder are mapped dynamically, i.e. a request for "/subdir/test.js" would result in a lookup in the "subdir" folder of the webapp when the request is made, to any level of nested directories. 
 
 In addition to looking for `webapp.cfg` in each `webapp-` directory it finds,  it will also look for and if it exists use `webapp.cfg` in the directory of the top-level module.  This file will be processed last, overriding any entries with the same key in previously loaded modules.
 
@@ -21,6 +21,11 @@ For files, the mapping results directly in the file to be served when the corres
    
    A request for `/asset/images/img1.jpg` would translate into a request for `../../../images/img1.jpg` related to the module folder, while `/asset/images/01/img1.jpg` would translate to a request for `../../../images/01/img1.jpg`.  Any additional components in the requested path are sanitized to prevent injections of paths above the based path mapped to.
 
+The destination is string interpolated as follows:
+
+**${HOME}** - is replaced with the full path to the current user's home directory
+
+**${*module*}** - is replaced with the full path to the specified module.  This module must be in the node_modules folder of the module whose `webapp.cfg` file is being processed, i.e. a direct dependency.  The idea of this variable is to allow a webapp to have other non-webapp packages which *it* depends on which it then maps into the request URL space in its `webapp.cfg`.
 
 ## Exclusions
 
