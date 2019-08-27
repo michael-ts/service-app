@@ -3,7 +3,10 @@
   "version": "2.2.0",
   "description": "app default file service plug-in for express-modular-server",
   "main": "app.js",
-  "dependencies": {},
+  "dependencies": {
+    "mime-types": "^2.1.24",
+    "sanitize-filename": "^1.6.3"
+  },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
