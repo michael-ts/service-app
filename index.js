@@ -204,8 +204,13 @@ function Interpolate(wa_path,str) {
     try {
 	return str.replace(/(?:\$\{)(.*?)\}/g, (a,b) => {
 	    if (b == "HOME") return HOME
-	    // why not just return `${base}/node_modules/${b}/` at this point???
-	    return path.dirname(require.resolve(`${base}/node_modules/${b}/package.json`))
+	    try {
+		// first try the node_modules directory of the module being loaded
+		return path.dirname(require.resolve(`${base}/node_modules/${b}/package.json`))
+	    } catch (e) {
+		// if that fails, try the regular search path
+		return path.dirname(require.resolve(`${b}/package.json`))
+	    }
 	})
     } catch (e) {
 	console.log(`interpolate: ${e}`)
