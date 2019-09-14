@@ -206,10 +206,10 @@ function Interpolate(wa_path,str) {
 	    if (b == "HOME") return HOME
 	    try {
 		// first try the node_modules directory of the module being loaded
-		return path.dirname(require.resolve(`${base}/node_modules/${b}/package.json`))
+		return path.normalize(path.dirname(require.resolve(`${base}/node_modules/${b}/package.json`)))
 	    } catch (e) {
 		// if that fails, try the regular search path
-		return path.dirname(require.resolve(`${b}/package.json`))
+		return path.normalize(path.dirname(require.resolve(`${b}/package.json`)))
 	    }
 	})
     } catch (e) {
