@@ -153,6 +153,7 @@ var files = { }
 
 function DefaultFile(req,res) {
     var file = req.path.slice(1)
+    if (file == "") file = "index.html"
     if (!(file in files)) {
 	res.status(404).send("404 File not found")
 	return
