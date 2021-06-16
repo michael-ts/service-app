@@ -78,7 +78,7 @@ function DefaultFile(req, res) {
 */
 
 function Server(req,res,next) {
-    console.log("app:",servedfile)
+    LogSvc(servedfile)
     res.sendFile(files[servedfile])
 }
 /*
@@ -158,18 +158,20 @@ function DefaultFile(req,res) {
 	res.status(404).send("404 File not found")
 	return
     }
+    LogSvc(files[file])
     res.sendFile(files[file])
 }
 
 function ProcessWebAppDir(app,path0,fn) {
     var wa_path = path0+path.sep+fn
-    console.log("map: ",wa_path)
+    //console.log("map: ",wa_path)
     if (ProcessConfig(app,wa_path)) return
     var tmp2 = fs.readdirSync(wa_path)
 	.map(file2=> {
 	    if (file2 == ".git") return false
 	    if (file2 == "node_modules") return false
 	    if (file2 == "package.json") return false
+	    if (file2 == "package-lock.json") return false
 	    if (file2 == "README.md") return false
 	    if (file2.slice(-1) == "~") return false
 	    var x= wa_path+path.sep+file2
@@ -178,17 +180,17 @@ function ProcessWebAppDir(app,path0,fn) {
 		RouteAdd(app,file2,wa_path+path.sep+file2+path.sep)
 	    } else if (stat && stat.isFile()) {
 		files[file2] = wa_path+path.sep+file2
-		console.log(file2,"->",wa_path+path.sep+file2);
+		//console.log(file2,"->",wa_path+path.sep+file2);
 	    }
 	})
 }
 
 function RouteAdd(app,file,dest) {
-    console.log(file,"=>",dest);
+    //console.log(file,"=>",dest);
     app.get(path.sep+file+path.sep+"*", (req,res) => {
 	//console.log(`path=${req.path} => ${dest}`)
 	var sub = dest+req.params[0].split("/").map(sanitize).join("/")
-	console.log(sub)
+	//console.log(sub)
 	res.sendFile(sub)
     })
 }
@@ -201,7 +203,7 @@ function Interpolate(wa_path,str) {
       ${module} -> package "module"'s top-level directory
     */
     var base = path.dirname(require.resolve(`${wa_path}/package.json`))
-    console.log(`Interpolate ${wa_path}, ${str}`)
+    //console.log(`Interpolate ${wa_path}, ${str}`)
     try {
 	return str.replace(/(?:\$\{)(.*?)\}/g, (a,b) => {
 	    if (b == "HOME") return HOME
@@ -242,7 +244,7 @@ function ProcessConfig(app,wa_path) {
 	    if (isDir) {
 		RouteAdd(app,i0,dest+path.sep)
 	    } else {
-		console.log(`${i} -> ${dest}`)
+		//console.log(`${i} -> ${dest}`)
 		files[i0] = dest
 	    }
 	}
@@ -269,7 +271,7 @@ module.exports = function(app,express,options,file) {
     var appdir = p
     while (true) {
 	var path0 = p+path.sep+"node_modules"
-	console.log(`l00king for ${path0}`)
+	//console.log(`l00king for ${path0}`)
 	if (fs.existsSync(path0)) {
 	    var tmp = fs.readdirSync(path0)
 		.filter(file=>{
