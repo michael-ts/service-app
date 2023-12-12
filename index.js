@@ -78,7 +78,7 @@ function DefaultFile(req, res) {
 */
 
 function Server(req,res,next) {
-    LogSvc(servedfile)
+    //LogSvc(servedfile)
     res.sendFile(files[servedfile])
 }
 /*
@@ -158,7 +158,7 @@ function DefaultFile(req,res) {
 	res.status(404).send("404 File not found")
 	return
     }
-    LogSvc(files[file])
+    //LogSvc(files[file])
     res.sendFile(files[file])
 }
 
@@ -255,7 +255,8 @@ function ProcessConfig(app,wa_path) {
     }
 }
 
-module.exports = function(app,express,options,file) {
+module.exports = function(app,express,options,utils,config) {
+    if (!app) return files
     if (options && typeof options == "string") {
 	endpoint = options
     }
@@ -263,26 +264,18 @@ module.exports = function(app,express,options,file) {
 	if ("endpoint" in options) endpoint = options.endpoint
 	if ("show_dirs" in options) show_dirs = options.show_dirs
     }
+    /* file used to be the 4th arg, but we never used it from express-modular-server! should be in the options!
     if (file && typeof file == "string") {
 	servedfile = file
     }
+    */
     Log("service app ",endpoint,",",servedfile)
     Log("service DefaultFile")
+    app.get('/', function(req, res) {
+	res.redirect('/app/home');
+    })
     var appdir = p
-    while (true) {
-	var path0 = p+path.sep+"node_modules"
-	//console.log(`l00king for ${path0}`)
-	if (fs.existsSync(path0)) {
-	    var tmp = fs.readdirSync(path0)
-		.filter(file=>{
-		    return file.slice(0,7) == "webapp-"
-			&& fs.statSync(path0+path.sep+file).isDirectory()
-		})
-		.map(fn=>ProcessWebAppDir(app,path0,fn))
-	}
-	if (p == path.sep) break
-	p = path.resolve(p+path.sep+"..")
-    }
+    utils.find_packages_by_prefix(config["webapp-prefix"],config,(path0,fn)=>ProcessWebAppDir(app,path0,fn))
     ProcessConfig(app,appdir)
     app.use(endpoint, Server)
     app.use(DefaultFile)
